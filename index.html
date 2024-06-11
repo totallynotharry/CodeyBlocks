@@ -101,13 +101,13 @@
     </div>
   </div>
   <xml id="toolbox" style="display: none">
-    <category name="Motion" colour="120">
+    <category name="Events" colour="210">
+      <block type="when_start"></block>
+    </category>
+    <category name="Motion" colour="120" hidden="true">
       <block type="move_forward"></block>
       <block type="turn_right"></block>
       <block type="turn_left"></block>
-    </category>
-    <category name="Events" colour="210">
-      <block type="when_start"></block>
     </category>
   </xml>
   <div id="buttons">
@@ -241,6 +241,27 @@
         alert('Error in code: ' + e);
       }
     }
+
+    // Function to check if an events block is used and show/hide categories accordingly
+    function updateToolbox() {
+      var hasEventsBlock = workspace.getAllBlocks().some(block => block.type === 'when_start');
+      var toolboxXml = `
+        <xml>
+          <category name="Events" colour="210">
+            <block type="when_start"></block>
+          </category>
+          <category name="Motion" colour="120" ${hasEventsBlock ? '' : 'hidden="true"'}>
+            <block type="move_forward"></block>
+            <block type="turn_right"></block>
+            <block type="turn_left"></block>
+          </category>
+        </xml>`;
+      var toolboxDom = Blockly.Xml.textToDom(toolboxXml);
+      workspace.updateToolbox(toolboxDom);
+    }
+
+    // Add event listener to update toolbox when blocks change
+    workspace.addChangeListener(updateToolbox);
   </script>
 </body>
 </html>
