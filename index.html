@@ -49,16 +49,14 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       background-color: white;
       position: relative;
+      overflow: hidden;
     }
-    #sprite {
+    .sprite {
       position: absolute;
       width: 50px;
       height: 50px;
       background-color: red;
       border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
     }
     #buttons {
       margin-top: 10px;
@@ -90,21 +88,37 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       overflow-x: auto;
     }
+    #spriteLibrary {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .spriteLibraryItem {
+      margin: 10px;
+      cursor: pointer;
+    }
+    .spriteLibraryItem img {
+      width: 50px;
+      height: 50px;
+    }
   </style>
 </head>
 <body>
   <header>CodeyBlocks</header>
   <div id="container">
     <div id="blocklyDiv"></div>
-    <div id="stage">
-      <div id="sprite"></div>
-    </div>
+    <div id="stage"></div>
+  </div>
+  <div id="spriteLibrary">
+    <div class="spriteLibraryItem" onclick="setSprite('red')"><img src="red.png"></div>
+    <div class="spriteLibraryItem" onclick="setSprite('blue')"><img src="blue.png"></div>
+    <!-- Add more sprite library items here -->
   </div>
   <xml id="toolbox" style="display: none">
     <category name="Events" colour="210">
       <block type="when_start"></block>
     </category>
-    <category name="Motion" colour="120" hidden="true">
+    <category name="Motion" colour="120">
       <block type="move_forward"></block>
       <block type="turn_right"></block>
       <block type="turn_left"></block>
@@ -199,7 +213,7 @@
       return code;
     };
 
-    // Function to show the generated code
+       // Function to show the generated code
     function showCode() {
       var code = Blockly.JavaScript.workspaceToCode(workspace);
       document.getElementById('code').innerText = code;
@@ -242,26 +256,16 @@
       }
     }
 
-    // Function to check if an events block is used and show/hide categories accordingly
-    function updateToolbox() {
-      var hasEventsBlock = workspace.getAllBlocks().some(block => block.type === 'when_start');
-      var toolboxXml = `
-        <xml>
-          <category name="Events" colour="210">
-            <block type="when_start"></block>
-          </category>
-          <category name="Motion" colour="120" ${hasEventsBlock ? '' : 'hidden="true"'}>
-            <block type="move_forward"></block>
-            <block type="turn_right"></block>
-            <block type="turn_left"></block>
-          </category>
-        </xml>`;
-      var toolboxDom = Blockly.Xml.textToDom(toolboxXml);
-      workspace.updateToolbox(toolboxDom);
+    // Function to set sprite
+    function setSprite(color) {
+      var stage = document.getElementById('stage');
+      stage.innerHTML = '';
+      var newSprite = document.createElement('div');
+      newSprite.classList.add('sprite');
+      newSprite.style.backgroundColor = color;
+      stage.appendChild(newSprite);
+      sprite = newSprite;
     }
-
-    // Add event listener to update toolbox when blocks change
-    workspace.addChangeListener(updateToolbox);
   </script>
 </body>
 </html>
