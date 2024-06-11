@@ -1,271 +1,193 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
   <title>CodeyBlocks</title>
+  <!-- Include Blockly -->
   <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+  <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
+  <script src="https://unpkg.com/blockly/msg/js/en.js"></script>
+  <!-- Add CSS for full-screen layout -->
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f5f5f5;
+    html, body {
+      height: 100%;
       margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-    }
-    header {
-      background-color: #4CAF50;
-      color: white;
-      width: 100%;
-      padding: 15px 0;
-      text-align: center;
-      font-size: 1.5em;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    #container {
-      display: flex;
-      width: 100%;
-      height: calc(100vh - 60px);
-      justify-content: center;
-      align-items: flex-start;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-    #blocklyDiv {
-      height: 100%;
-      width: 60%;
-      max-width: 800px;
-      margin-right: 20px;
-      border: 1px solid #ddd;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    #stage {
-      height: 100%;
-      width: 40%;
-      max-width: 400px;
-      border: 1px solid #ddd;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      background-color: white;
-      position: relative;
       overflow: hidden;
     }
-    .sprite {
-      position: absolute;
-      width: 50px;
-      height: 50px;
-      background-color: red;
-      border-radius: 50%;
+    #blocklyDiv {
+      height: 90%;
+      width: 100%;
     }
-    #buttons {
-      margin-top: 10px;
-      clear: both;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      text-align: center;
-      text-decoration: none;
+    #runButton, #infoButton {
       display: inline-block;
-      font-size: 16px;
-      margin: 4px 2px;
-      cursor: pointer;
-      border-radius: 4px;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    pre {
-      background-color: #f4f4f4;
-      padding: 15px;
-      border: 1px solid #ddd;
-      width: 80%;
-      max-width: 900px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      overflow-x: auto;
-    }
-    #spriteLibrary {
-      display: flex;
-      flex-wrap: wrap;
-      margin-top: 20px;
-    }
-    .spriteLibraryItem {
+      width: 40px;
+      height: 40px;
       margin: 10px;
+      background-color: #555;
+      color: #fff;
+      border: none;
+      font-size: 16px;
       cursor: pointer;
+      border-radius: 50%; /* Make the button circular */
     }
-    .spriteLibraryItem img {
-      width: 50px;
-      height: 50px;
+    #runButton {
+      background-color: #555;
+    }
+    #infoButton {
+      background-color: #007bff;
+    }
+    #infoButton::before {
+      content: 'i';
+      font-weight: bold;
+      line-height: 40px; /* Center the content vertically */
+      text-align: center; /* Center the content horizontally */
     }
   </style>
 </head>
 <body>
-  <header>CodeyBlocks</header>
-  <div id="container">
-    <div id="blocklyDiv"></div>
-    <div id="stage"></div>
-  </div>
-  <div id="spriteLibrary">
-    <div class="spriteLibraryItem" onclick="setSprite('red')"><img src="red.png"></div>
-    <div class="spriteLibraryItem" onclick="setSprite('blue')"><img src="blue.png"></div>
-    <!-- Add more sprite library items here -->
-  </div>
-  <xml id="toolbox" style="display: none">
-    <category name="Events" colour="210">
-      <block type="when_start"></block>
-    </category>
-    <category name="Motion" colour="120">
-      <block type="move_forward"></block>
-      <block type="turn_right"></block>
-      <block type="turn_left"></block>
-    </category>
-  </xml>
-  <div id="buttons">
-    <button onclick="showCode()">Show Code</button>
-    <button onclick="runCode()">Run Code</button>
-  </div>
-  <pre id="code"></pre>
+  <!-- Create a div for Blockly workspace -->
+  <div id="blocklyDiv"></div>
+
+  <!-- Run button -->
+  <button id="runButton">Run</button>
+  <!-- Info button -->
+  <button id="infoButton"></button>
 
   <script>
-    // Inject Blockly workspace
+    // Define custom blocks
+    Blockly.Blocks['print_popup'] = {
+      init: function() {
+        this.appendValueInput("content")
+            .setCheck(null)
+            .appendField("print popup");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(160);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
+
+    Blockly.Blocks['change_variable_by'] = {
+      init: function() {
+        this.appendValueInput("value")
+            .setCheck("Number")
+            .appendField("change")
+            .appendField(new Blockly.FieldVariable("item"), "variable")
+            .appendField("by");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(230);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
+
+    Blockly.Blocks['delete_all_list'] = {
+      init: function() {
+        this.appendValueInput("list")
+            .setCheck("Array")
+            .appendField("delete all elements of list");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(260);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
+
+    Blockly.Blocks['js_code'] = {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("JavaScript")
+            .appendField(new Blockly.FieldTextInput("console.log('Hello, World!');"), "CODE");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(20);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    };
+
+    // Define blockly toolbox
+    var toolbox = '<xml id="toolbox" style="display: none">' +
+      '<category name="Math" colour="230">' +
+      '<block type="math_number"></block>' +
+      '<block type="math_arithmetic"></block>' +
+      '<block type="math_trig"></block>' +
+      '<block type="math_constant"></block>' +
+      '</category>' +
+      '<category name="Text" colour="160">' +
+      '<block type="text"></block>' +
+      '<block type="text_length"></block>' +
+      '</category>' +
+      '<category name="Variables" colour="330">' +
+      '<block type="variables_get"></block>' +
+      '<block type="variables_set"></block>' +
+      '<block type="change_variable_by"></block>' +
+      '</category>' +
+      '<category name="Lists" colour="260">' +
+      '<block type="lists_create_empty"></block>' +
+      '<block type="lists_create_with"></block>' +
+      '<block type="lists_length"></block>' +
+      '<block type="lists_isEmpty"></block>' +
+      '<block type="lists_indexOf"></block>' +
+      '<block type="lists_getIndex"></block>' +
+      '<block type="lists_setIndex"></block>' +
+      '<block type="delete_all_list"></block>' +
+      '</category>' +
+      '<category name="Loops" colour="120">' +
+      '<block type="controls_repeat"></block>' +
+      '<block type="controls_whileUntil"></block>' +
+      '<block type="controls_for"></block>' +
+      '</category>' +
+      '<category name="Logic" colour="210">' +
+      '<block type="logic_compare"></block>' +
+      '<block type="logic_operation"></block>' +
+      '<block type="logic_negate"></block>' +
+      '<block type="logic_boolean"></block>' +
+      '</category>' +
+      '<category name="Functions" colour="290">' +
+      '<block type="procedures_defnoreturn"></block>' +
+      '<block type="procedures_callnoreturn"></block>' +
+      '</category>' +
+      '<category name="Variables" colour="330">' +
+      '<block type="variables_get"></block>' +
+      '<block type="variables_set"></block>' +
+      '</category>' +
+      '<category name="JavaScript" colour="20">' +
+      '<block type="js_code"></block>' +
+      '</category>' +
+      '</xml>';
+
+    // Create Blockly workspace
     var workspace = Blockly.inject('blocklyDiv', {
-      toolbox: document.getElementById('toolbox')
+      toolbox: toolbox,  // Load toolbox XML
+      zoom: {controls: true, wheel: true},  // Enable zooming
+      trashcan: true  // Enable trashcan
     });
 
-    // Define custom blocks
-    Blockly.Blocks['when_start'] = {
-      init: function() {
-        this.appendDummyInput()
-            .appendField("when start clicked");
-        this.setNextStatement(true, null);
-        this.setColour(210);
-        this.setTooltip('');
-        this.setHelpUrl('');
-      }
-    };
+    // Info button action
+    document.getElementById('infoButton').addEventListener('click', function() {
+      alert('CodeyBlocks is in beta.');
+    });
 
-    Blockly.JavaScript['when_start'] = function(block) {
-      var code = '';
-      return code;
-    };
-
-    Blockly.Blocks['move_forward'] = {
-      init: function() {
-        this.appendDummyInput()
-            .appendField("move forward by")
-            .appendField(new Blockly.FieldNumber(10, 1), "STEPS")
-            .appendField("steps");
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(120);
-        this.setTooltip('');
-        this.setHelpUrl('');
-      }
-    };
-
-    Blockly.JavaScript['move_forward'] = function(block) {
-      var steps = block.getFieldValue('STEPS');
-      var code = 'moveForward(' + steps + ');\n';
-      return code;
-    };
-
-    Blockly.Blocks['turn_right'] = {
-      init: function() {
-        this.appendDummyInput()
-            .appendField("turn right by")
-            .appendField(new Blockly.FieldAngle(90), "ANGLE")
-            .appendField("degrees");
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(120);
-        this.setTooltip('');
-        this.setHelpUrl('');
-      }
-    };
-
-    Blockly.JavaScript['turn_right'] = function(block) {
-      var angle = block.getFieldValue('ANGLE');
-      var code = 'turnRight(' + angle + ');\n';
-      return code;
-    };
-
-    Blockly.Blocks['turn_left'] = {
-      init: function() {
-        this.appendDummyInput()
-            .appendField("turn left by")
-            .appendField(new Blockly.FieldAngle(90), "ANGLE")
-            .appendField("degrees");
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(120);
-        this.setTooltip('');
-        this.setHelpUrl('');
-      }
-    };
-
-    Blockly.JavaScript['turn_left'] = function(block) {
-      var angle = block.getFieldValue('ANGLE');
-      var code = 'turnLeft(' + angle + ');\n';
-      return code;
-    };
-
-       // Function to show the generated code
-    function showCode() {
-      var code = Blockly.JavaScript.workspaceToCode(workspace);
-      document.getElementById('code').innerText = code;
-    }
-
-    // Sprite control functions
-    var sprite = document.getElementById('sprite');
-    var spriteX = 175;
-    var spriteY = 175;
-    var spriteAngle = 0;
-
-    function moveForward(steps) {
-      var radians = spriteAngle * Math.PI / 180;
-      spriteX += Math.cos(radians) * steps;
-      spriteY += Math.sin(radians) * steps;
-      updateSprite();
-    }
-
-    function turnRight(angle) {
-      spriteAngle += angle;
-      updateSprite();
-    }
-
-    function turnLeft(angle) {
-      spriteAngle -= angle;
-      updateSprite();
-    }
-
-    function updateSprite() {
-      sprite.style.transform = `translate(${spriteX}px, ${spriteY}px) rotate(${spriteAngle}deg)`;
-    }
-
-    // Function to run the generated code
+    // Generate code from workspace
     function runCode() {
       var code = Blockly.JavaScript.workspaceToCode(workspace);
+      console.log('Executing code:');
+      console.log(code);
       try {
         eval(code);
-      } catch (e) {
-        alert('Error in code: ' + e);
+      } catch (error) {
+        console.error('Error executing code:', error);
       }
     }
 
-    // Function to set sprite
-    function setSprite(color) {
-      var stage = document.getElementById('stage');
-      stage.innerHTML = '';
-      var newSprite = document.createElement('div');
-      newSprite.classList.add('sprite');
-      newSprite.style.backgroundColor = color;
-      stage.appendChild(newSprite);
-      sprite = newSprite;
-    }
+    // Add event listener to run button
+    document.getElementById('runButton').addEventListener('click', runCode);
   </script>
 </body>
 </html>
+
